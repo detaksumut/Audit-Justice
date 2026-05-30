@@ -17,6 +17,12 @@ const playfair = Playfair_Display({
 export const metadata: Metadata = {
   title: "Audit Pengadilan AI",
   description: "Sistem Audit Keputusan Pengadilan Berbasis AI",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "A-Justice",
+  },
 };
 
 import type { Viewport } from 'next';

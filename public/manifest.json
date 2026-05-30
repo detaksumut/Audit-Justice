@@ -1,0 +1,16 @@
+{
+  "name": "Audit Justice AI",
+  "short_name": "A-Justice",
+  "description": "Sistem Audit Keputusan Pengadilan Berbasis AI",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#0f172a",
+  "icons": [
+    {
+      "src": "/dunia_peradilan.png",
+      "sizes": "any",
+      "type": "image/png"
+    }
+  ]
+}
