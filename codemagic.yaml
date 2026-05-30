@@ -15,10 +15,12 @@ workflows:
         script: npx cap sync ios
       - name: Build iOS App
         script: |
+          set -e
           cd ios/App
-          xcodebuild -workspace App.xcworkspace -scheme App -configuration Release -destination 'generic/platform=iOS' clean build CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO
+          xcodebuild -workspace App.xcworkspace -scheme App -configuration Release -destination 'generic/platform=iOS' SYMROOT=$(PWD)/build clean build CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO
       - name: Package to IPA
         script: |
+          set -e
           cd ios/App
           mkdir -p Payload
           mv build/Release-iphoneos/App.app Payload/
