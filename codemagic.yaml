@@ -1,0 +1,27 @@
+workflows:
+  ios-workflow:
+    name: Build iOS App (Unsigned)
+    max_build_duration: 120
+    environment:
+      node: 20
+      xcode: latest
+      cocoapods: default
+    scripts:
+      - name: Install Dependencies
+        script: npm install
+      - name: Build Web Code
+        script: npm run build
+      - name: Sync Capacitor to iOS
+        script: npx cap sync ios
+      - name: Build iOS App
+        script: |
+          cd ios/App
+          xcodebuild -workspace App.xcworkspace -scheme App -configuration Release -destination 'generic/platform=iOS' clean build CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO
+      - name: Package to IPA
+        script: |
+          cd ios/App
+          mkdir -p Payload
+          mv build/Release-iphoneos/App.app Payload/
+          zip -r AuditJustice.ipa Payload
+    artifacts:
+      - ios/App/AuditJustice.ipa
