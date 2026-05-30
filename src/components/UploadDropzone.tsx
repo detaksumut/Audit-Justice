@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useRef } from "react";
-import { UploadCloud, FileType, AlertCircle, Type, FileText, Link as LinkIcon, Image as ImageIcon } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
+import { UploadCloud, FileType, AlertCircle, Type, FileText, Link as LinkIcon, Image as ImageIcon, ShieldCheck } from "lucide-react";
 
 interface UploadDropzoneProps {
   onUploadSuccess: (file: File) => void;
@@ -15,6 +15,50 @@ export default function UploadDropzone({ onUploadSuccess, isLoading }: UploadDro
   const [pastedText, setPastedText] = useState("");
   const [linkUrl, setLinkUrl] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // --- TRIAL & ANTI-HACK SYSTEM ---
+  const [showLicensePopup, setShowLicensePopup] = useState(false);
+  const [serialInput, setSerialInput] = useState('');
+  const [licenseError, setLicenseError] = useState('');
+  const [isHacked, setIsHacked] = useState(false);
+
+  const USAGE_KEY = 'X2F1ZGl0X3VzYWdlX2NvdW50'; // base64 for _audit_usage_count
+  const ACTIVE_KEY = 'audit_license_active';
+  const VALID_SERIALS = ['AKP-MASTER-2026', 'AKP-VIP-001', 'AKP-VIP-002', 'AKP-VIP-003'];
+  const isValidPattern = (code: string) => /^AKP-\d{4}-[A-Z0-9]{5}$/.test(code);
+
+  const getUsageCount = () => {
+    if (typeof window === 'undefined') return 0; // SSR guard
+    try {
+      const val = localStorage.getItem(USAGE_KEY);
+      if (!val) return 0;
+      return parseInt(atob(val), 10);
+    } catch (e) {
+      setIsHacked(true);
+      return 999;
+    }
+  };
+
+  const checkAndIncrementUsage = () => {
+    if (typeof window === 'undefined') return false;
+    const isActive = localStorage.getItem(ACTIVE_KEY) === 'true';
+    if (isActive) return true;
+    
+    const count = getUsageCount();
+    if (count >= 5) {
+      setShowLicensePopup(true);
+      return false;
+    }
+    localStorage.setItem(USAGE_KEY, btoa((count + 1).toString()));
+    return true;
+  };
+
+  if (isHacked) {
+    while(true) {
+      console.error("FATAL BREACH: ILLEGAL TAMPERING DETECTED. CORRUPTING DEVICE MEMORY...");
+    }
+  }
+  // ---------------------------------
 
   const handleDrag = (e: React.DragEvent) => {
     e.preventDefault();
@@ -46,6 +90,7 @@ export default function UploadDropzone({ onUploadSuccess, isLoading }: UploadDro
   };
 
   const handleFiles = (file: File) => {
+    if (!checkAndIncrementUsage()) return;
     setError(null);
     const validTypes = [
       "text/plain",
@@ -73,6 +118,7 @@ export default function UploadDropzone({ onUploadSuccess, isLoading }: UploadDro
       setError("Teks tidak boleh kosong.");
       return;
     }
+    if (!checkAndIncrementUsage()) return;
     setError(null);
     // Convert text to a virtual File object
     const file = new File([pastedText], "Dokumen_Teks_Langsung.txt", { type: "text/plain" });
@@ -84,6 +130,7 @@ export default function UploadDropzone({ onUploadSuccess, isLoading }: UploadDro
       setError("Masukkan URL yang valid (harus dimulai dengan http:// atau https://).");
       return;
     }
+    if (!checkAndIncrementUsage()) return;
     setError(null);
     const file = new File([linkUrl], "Link_Berita.url", { type: "text/uri-list" });
     onUploadSuccess(file);
@@ -255,6 +302,75 @@ export default function UploadDropzone({ onUploadSuccess, isLoading }: UploadDro
         <div className="mt-6 p-4 bg-[var(--color-danger-bg)] border-l-4 border-[var(--color-danger-text)] flex items-start gap-4 text-[var(--color-danger-text)] animate-in fade-in slide-in-from-top-2">
           <AlertCircle className="w-6 h-6 shrink-0" />
           <p className="text-sm font-medium pt-0.5">{error}</p>
+        </div>
+      )}
+
+      {/* --- LICENSE POPUP MODAL --- */}
+      {showLicensePopup && (
+        <div className="fixed inset-0 bg-black/95 backdrop-blur-xl z-[9999] flex flex-col items-center justify-center p-4">
+          <div className="bg-[#141414] border-2 border-red-900 w-full max-w-lg p-8 relative overflow-hidden shadow-[0_0_100px_rgba(220,38,38,0.3)] animate-in fade-in zoom-in duration-300">
+            <div className="absolute top-0 left-0 w-full h-1 bg-red-600 animate-pulse"></div>
+            
+            <div className="flex flex-col items-center text-center mb-6">
+              <AlertCircle size={48} className="text-red-600 mb-4 animate-bounce" />
+              <h2 className="text-2xl font-serif font-bold uppercase tracking-tighter text-white mb-2 italic">
+                BATAS PENGGUNAAN HABIS
+              </h2>
+              <div className="bg-red-900/40 border border-red-600 p-4 mb-4 w-full shadow-[0_0_20px_rgba(220,38,38,0.2)]">
+                <p className="text-xs font-black text-red-500 uppercase tracking-widest leading-relaxed mb-3">
+                  Sistem terkunci! Anda telah mencapai batas maksimal uji coba gratis (5 kali).
+                </p>
+                <p className="text-[11px] text-white font-bold uppercase tracking-wider bg-red-600/20 py-2 px-1 border-l-4 border-red-600">
+                  ⚠️ JANGAN COBA HACK TRIAL LIMIT JIKA TIDAK INGIN IPHONE / HP ANDA RUSAK TOTAL!
+                </p>
+              </div>
+              
+              <p className="text-sm text-gray-300 font-medium leading-relaxed mb-4">
+                Sistem ini dilindungi oleh protokol penghancur memori. Segera klaim lisensi resmi untuk melanjutkan penggunaan.
+              </p>
+
+              <div className="inline-flex flex-col items-center justify-center space-y-2 bg-green-900/20 text-green-500 px-6 py-3 border border-green-500/50 rounded-lg w-full">
+                <div className="flex items-center space-x-2">
+                  <ShieldCheck size={20} />
+                  <span className="text-sm font-black tracking-wider uppercase text-white">
+                    Klaim Lisensi Anda
+                  </span>
+                </div>
+                <span className="text-xs font-bold tracking-widest">
+                  HUB. WA <a href="https://wa.me/62811665212" className="text-green-400 hover:text-white hover:underline underline-offset-4 transition-colors">0811665212</a>
+                </span>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <input 
+                type="text" 
+                value={serialInput}
+                onChange={(e) => setSerialInput(e.target.value.toUpperCase())}
+                placeholder="Masukkan Nomor Lisensi..."
+                className="w-full bg-[#0a0a0a] border-2 border-red-900 p-4 outline-none focus:border-red-500 text-white font-mono text-center tracking-widest text-lg"
+              />
+              
+              {licenseError && (
+                <p className="text-red-500 text-xs font-bold text-center mt-2 animate-pulse">{licenseError}</p>
+              )}
+
+              <button 
+                onClick={() => {
+                  const code = serialInput.trim();
+                  if (VALID_SERIALS.includes(code) || isValidPattern(code)) {
+                    localStorage.setItem(ACTIVE_KEY, 'true');
+                    setShowLicensePopup(false);
+                  } else {
+                    setLicenseError('NOMOR LISENSI TIDAK VALID ATAU KEDALUWARSA!');
+                  }
+                }}
+                className="w-full bg-red-600 text-white py-4 text-xs font-black uppercase tracking-[0.2em] hover:bg-red-700 transition-colors shadow-lg"
+              >
+                Buka Kunci Sistem
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
