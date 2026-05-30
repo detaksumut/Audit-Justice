@@ -81,9 +81,21 @@ export default function AuditPage() {
   };
 
   const checkAccessAndExecute = (action: () => void) => {
-    const validLicense = "AUDIT-JUSTICE-VIP";
-    const currentLicense = localStorage.getItem('audit_justice_license_key');
-    if (currentLicense === validLicense) {
+    const currentLicense = localStorage.getItem('audit_justice_license_key') || "";
+    
+    const isLicenseValid = currentLicense === "AUDIT-JUSTICE-VIP" || (() => {
+      if (!currentLicense.startsWith("AJ-")) return false;
+      const payload = currentLicense.slice(3);
+      if (!/^[A-Z]{8}$/.test(payload)) return false;
+      const weights = [3, 7, 1, 9, 5, 8, 2, 6];
+      let sum = 0;
+      for (let i = 0; i < 8; i++) {
+        sum += payload.charCodeAt(i) * weights[i];
+      }
+      return sum % 13 === 7;
+    })();
+
+    if (isLicenseValid) {
       action();
       return;
     }
@@ -164,12 +176,31 @@ export default function AuditPage() {
                   return;
                 }
                 if (accessMode === 'apikey') {
-                  localStorage.setItem('audit_justice_api_key', accessInput);
+                  localStorage.setItem('audit_justice_api_key', accessInput.trim());
+                  setShowAccessModal(false);
+                  if (pendingAction) pendingAction();
                 } else {
-                  localStorage.setItem('audit_justice_license_key', accessInput);
+                  const code = accessInput.trim().toUpperCase();
+                  const isLicenseValid = code === "AUDIT-JUSTICE-VIP" || (() => {
+                    if (!code.startsWith("AJ-")) return false;
+                    const payload = code.slice(3);
+                    if (!/^[A-Z]{8}$/.test(payload)) return false;
+                    const weights = [3, 7, 1, 9, 5, 8, 2, 6];
+                    let sum = 0;
+                    for (let i = 0; i < 8; i++) {
+                      sum += payload.charCodeAt(i) * weights[i];
+                    }
+                    return sum % 13 === 7;
+                  })();
+
+                  if (isLicenseValid) {
+                    localStorage.setItem('audit_justice_license_key', code);
+                    setShowAccessModal(false);
+                    if (pendingAction) pendingAction();
+                  } else {
+                    setAccessError('Lisensi tidak valid! Hubungi administrator.');
+                  }
                 }
-                setShowAccessModal(false);
-                if (pendingAction) pendingAction();
               }}
               className="bg-[var(--color-primary)] text-white px-4 py-2 rounded hover:bg-[var(--color-primary)/80]"
             >
