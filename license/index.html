@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aktivasi Audit Justice</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #060b14;
+      color: #e2e8f0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+    .container {
+      background-color: #0f172a;
+      border: 1px solid #1e293b;
+      border-top: 4px solid #b8860b;
+      padding: 40px;
+      border-radius: 8px;
+      max-w: 500px;
+      width: 100%;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+      text-align: center;
+    }
+    h1 {
+      color: #b8860b;
+      margin-bottom: 10px;
+    }
+    p {
+      color: #94a3b8;
+      font-size: 14px;
+      line-height: 1.5;
+      margin-bottom: 20px;
+    }
+    .hwid-box {
+      background-color: #060b14;
+      border: 1px dashed #475569;
+      padding: 15px;
+      border-radius: 4px;
+      margin-bottom: 20px;
+      font-family: monospace;
+      font-size: 16px;
+      color: #38bdf8;
+      word-break: break-all;
+    }
+    input {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 20px;
+      background-color: #060b14;
+      border: 1px solid #334155;
+      color: white;
+      border-radius: 4px;
+      box-sizing: border-box;
+      font-size: 14px;
+    }
+    input:focus {
+      outline: none;
+      border-color: #b8860b;
+    }
+    button {
+      background-color: #b8860b;
+      color: #060b14;
+      border: none;
+      padding: 12px 24px;
+      font-size: 16px;
+      font-weight: bold;
+      border-radius: 4px;
+      cursor: pointer;
+      width: 100%;
+      transition: background-color 0.2s;
+    }
+    button:hover {
+      background-color: #d4af37;
+    }
+    #error-message {
+      color: #ef4444;
+      font-size: 14px;
+      margin-top: 15px;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>Aktivasi Lisensi</h1>
+    <p>Aplikasi ini dikunci secara perangkat keras. Harap salin <b>Kode Perangkat (HWID)</b> di bawah ini dan kirimkan ke Administrator untuk mendapatkan Kunci Lisensi.</p>
+    
+    <div class="hwid-box" id="hwid-display">Memuat HWID...</div>
+    
+    <input type="text" id="license-input" placeholder="Masukkan Kunci Lisensi (License Key) di sini..." autocomplete="off" spellcheck="false" />
+    
+    <button id="activate-btn">Aktifkan Aplikasi</button>
+    
+    <div id="error-message">Kunci Lisensi tidak valid untuk perangkat ini!</div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      // Get HWID from preload script
+      const hwid = await window.electronAPI.getHwid();
+      document.getElementById('hwid-display').innerText = hwid;
+
+      document.getElementById('activate-btn').addEventListener('click', async () => {
+        const key = document.getElementById('license-input').value.trim();
+        if(!key) return;
+        
+        const isValid = await window.electronAPI.verifyLicense(key);
+        if(isValid) {
+          document.body.innerHTML = '<div class="container"><h1>Aktivasi Berhasil!</h1><p>Sistem sedang disiapkan, harap tunggu...</p></div>';
+        } else {
+          const errBox = document.getElementById('error-message');
+          errBox.style.display = 'block';
+          setTimeout(() => errBox.style.display = 'none', 3000);
+        }
+      });
+    });
+  </script>
+
+</body>
+</html>
