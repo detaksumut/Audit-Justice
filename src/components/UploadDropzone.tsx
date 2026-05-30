@@ -24,8 +24,8 @@ export default function UploadDropzone({ onUploadSuccess, isLoading }: UploadDro
 
   const USAGE_KEY = 'X2F1ZGl0X3VzYWdlX2NvdW50'; // base64 for _audit_usage_count
   const ACTIVE_KEY = 'audit_license_active';
-  const VALID_SERIALS = ['AKP-MASTER-2026', 'AKP-VIP-001', 'AKP-VIP-002', 'AKP-VIP-003'];
-  const isValidPattern = (code: string) => /^AKP-\d{4}-[A-Z0-9]{5}$/.test(code);
+  const VALID_SERIALS = ['ADJ-MASTER-2026', 'ADJ-VIP-001', 'ADJ-VIP-002', 'AKP-MASTER-2026'];
+  const isValidPattern = (code: string) => /^(ADJ|AKP)-\d{4}-[A-Z0-9]{5}$/.test(code);
 
   const getUsageCount = () => {
     if (typeof window === 'undefined') return 0; // SSR guard
