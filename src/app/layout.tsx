@@ -57,5 +57,3 @@ export default function RootLayout({
     </html>
   );
 }
-
-maksud aku tulis lengkap ulang ini 
